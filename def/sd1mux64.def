@@ -1,0 +1,6 @@
+LIBRARY sd1mux_wi64.dll
+EXPORTS
+sd1mux_regCallback
+sd1mux_unregCallback
+sd1mux_notify
+sd1mux_socketpair

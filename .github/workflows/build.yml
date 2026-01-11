@@ -1,0 +1,39 @@
+name: sd1mux
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  release:
+    types: [ published ]
+
+jobs:
+  build-sd1mux:
+    runs-on: windows-2025
+    steps:
+    - name: Project checkout
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    - name: Checkout kx repo
+      uses: actions/checkout@v4
+      with:
+        repository: KxSystems/kdb
+        path: kdb
+    - name: Build
+      run: |
+        echo "set KX_KDB_PATH=%CD%\kdb" >config.cmd
+        echo "set PATH=C:\msys64\usr\bin;%PATH%" >>config.cmd
+        ./mklib64.cmd
+        ./b64.cmd
+    - name: Zip files
+      run: |
+        Compress-Archive -Path def/sd1mux64.def, include/sd1mux.h, sd1mux_wi64.dll -DestinationPath sd1mux_w64.zip
+      shell: pwsh
+    - name: Upload release
+      if: github.event_name == 'release'
+      env:
+        GITHUB_TOKEN: ${{ github.TOKEN }}
+      run: |
+        gh release upload ${{github.event.release.tag_name}} sd1mux_w64.zip
